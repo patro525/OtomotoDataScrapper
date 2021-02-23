@@ -39,25 +39,26 @@ def urlRequest(url): #connecting to the URL and parsing HTML with saving to Beau
 	soup = BeautifulSoup(response.text, "html.parser")
 
 def scrapData(soup): # Extracting data from the website
-	for i in soup.findAll('li', attrs={'data-code':'year'}):
-		year = re.search(r'<span>([\d{4}\s]+)</span>', str(i))
-		if year:
+	for i in soup.findAll('div', attrs={'class':'offer-item__content ds-details-container'}):
+		yearSoup = i.find('li', attrs={'data-code':'year'})
+		if yearSoup:
+			year = re.search(r'<span>([\d{4}\s]+)</span>', str(yearSoup))
 			record = str(year.group(1)) + ("\n")
 			yearList.append(str(record))
 		else:
 			yearList.append('-')
-
-	for i in soup.findAll('li', attrs={'data-code':'mileage'}):
-		mileage = re.search(r'<span>([\w\s\w]+) km</span>', str(i))
-		if mileage:
+	
+		mileageSoup = i.find('li', attrs={'data-code':'mileage'})
+		if mileageSoup:
+			mileage = re.search(r'<span>([\w\s\w]+) km</span>', str(mileageSoup))
 			record = str(mileage.group(1)) + ("\n")
 			mileageList.append(str(record))	
 		else:
 			mileageList.append('-')
-
-	for i in soup.findAll('span', attrs={'class':'offer-price__number ds-price-number'}):
-		price = re.search(r'<span>([\w\s\w]+)</span>', str(i))
-		if price:
+	
+		priceSoup = i.find('span', attrs={'class':'offer-price__number ds-price-number'})
+		if priceSoup:
+			price = re.search(r'<span>([\w\s\w]+)</span>', str(priceSoup))
 			record = str(price.group(1)) + ("\n")
 			priceList.append(str(record))
 		else:
@@ -76,9 +77,10 @@ def saveTXT(vehicleBrand, model): # Saving all the data to .txt file
 	allData.close()
 
 def saveCSV(vehicleBrand, model): # Saving all the data to .csv file
-	global fileNameCSV
+	global fileNameCSV	
 	fileNameCSV = str('otomoto_' + vehicleBrand + '_' +  model + '_data.csv')
 	allData = pd.DataFrame({'Rok':yearList, 'Cena':priceList, 'Przebieg':mileageList})
+	allData = allData.sort_values(by=['Rok'])
 	allData.to_csv(fileNameCSV, index=False, encoding='utf-8')
 
 def newDir(fileNameTXT, fileNameCSV): # Moving created .txt file to dedicated directory
