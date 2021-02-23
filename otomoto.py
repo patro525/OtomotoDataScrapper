@@ -2,6 +2,7 @@ import re, requests, urllib.request, os, shutil
 import pyinputplus as pyip # Used for input validation
 import pandas as pd # Used for data analysis, here: eg. creating CSV file
 from bs4 import BeautifulSoup # Used for web scrapping (HTML)
+from datetime import datetime
 from pathlib import Path
 
 # Lists to store values of the parameters
@@ -9,6 +10,7 @@ priceList = []
 yearList = []
 mileageList = []
 pageCounter = 1
+currentDate = datetime.now().strftime('%Y-%m-%d_%H:%M')
 
 def urlCreate(): # Setting up the URL(s)
 	global vehicleBrand, model, url, pageCounter
@@ -66,7 +68,7 @@ def scrapData(soup): # Extracting data from the website
 
 def saveTXT(vehicleBrand, model): # Saving all the data to .txt file
 	global fileNameTXT
-	fileNameTXT = str('otomoto_' + vehicleBrand + '_' +  model + '_data.txt')
+	fileNameTXT = str('otomoto_' + vehicleBrand + '_' +  model + '_' + currentDate + '_data.txt')
 	allData = open(fileNameTXT, 'a')
 	for i in priceList:
 		allData.write(str(i))
@@ -78,14 +80,15 @@ def saveTXT(vehicleBrand, model): # Saving all the data to .txt file
 
 def saveCSV(vehicleBrand, model): # Saving all the data to .csv file
 	global fileNameCSV	
-	fileNameCSV = str('otomoto_' + vehicleBrand + '_' +  model + '_data.csv')
+	fileNameCSV = str('otomoto_' + vehicleBrand + '_' +  model + '_' + currentDate + '_data.csv')
 	allData = pd.DataFrame({'Rok':yearList, 'Cena':priceList, 'Przebieg':mileageList})
-	allData = allData.sort_values(by=['Rok'])
+	allData = allData.sort_values(by=['Rok', 'Cena'])
 	allData.to_csv(fileNameCSV, index=False, encoding='utf-8')
 
-def newDir(fileNameTXT, fileNameCSV): # Moving created .txt file to dedicated directory
+def newDir(fileNameTXT, fileNameCSV): # Moving created files to dedicated directory
+	global newDirPath
 	currentPath = os.getcwd()
-	newDirName = str(vehicleBrand + '_' + model + '_data')
+	newDirName = str(vehicleBrand + '_' + model + '_' + currentDate + '_data')
 		# Creating new folder with dedicated name
 	newDirPath = str('CollectedData/' + newDirName)
 	os.path.join(currentPath, newDirPath)
@@ -105,3 +108,4 @@ scrapData(soup) # Data scrap for the first site
 nextPage = soup.findAll('li', attrs={'class':'next abs'}) # Return the tag with href to the next page
 loop(nextPage) # Loop initialisation
 newDir(fileNameTXT, fileNameCSV)
+print('Dane zostały pomyślnie pobrane. \nPobrano {0} wierszy. \nLokalizacja: {1}'.format(len(yearList), newDirPath))
