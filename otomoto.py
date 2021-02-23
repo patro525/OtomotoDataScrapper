@@ -40,7 +40,7 @@ def urlRequest(url): #connecting to the URL and parsing HTML with saving to Beau
 
 def scrapData(soup): # Extracting data from the website
 	for i in soup.findAll('li', attrs={'data-code':'year'}):
-		year = re.search(r'<span>([\d\d\d\d\s]+)</span>', str(i))
+		year = re.search(r'<span>([\d{4}\s]+)</span>', str(i))
 		if year:
 			record = str(year.group(1)) + ("\n")
 			yearList.append(str(record))
