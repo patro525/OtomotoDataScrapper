@@ -102,6 +102,7 @@ def newDir(fileNameTXT, fileNameCSV): # Moving created files to dedicated direct
 	destinationPathCSV = str(newDirPath + '/' + fileNameCSV)
 	shutil.move(sourcePathCSV, destinationPathCSV)
 
+print('Aby pobrać dane z serwisu otomoto wpisz żądaną markę i model samochodu.')
 urlCreate()
 urlRequest(url)
 scrapData(soup) # Data scrap for the first site
