@@ -1,4 +1,4 @@
-import re, requests, urllib.request, os, shutil
+import re, requests, urllib.request, os, shutil, time
 import pyinputplus as pyip # Used for input validation
 import pandas as pd # Used for data analysis, here: eg. creating CSV file
 from bs4 import BeautifulSoup # Used for web scrapping (HTML)
@@ -18,8 +18,7 @@ def urlCreate(): # Setting up the URL(s)
 	model = pyip.inputStr('Model: ')
 	vehicleBrand = vehicleBrand.lower()
 	model = model.lower()
-	url = str('http://www.otomoto.pl/osobowe/' + vehicleBrand + '/' + model)
-	print('Zbieranie danych: strona numer {}...'.format(str(pageCounter))) # An info about data collection from the first page
+	url = str('https://www.otomoto.pl/osobowe/' + vehicleBrand + '/' + model + '/')
 
 def loop(nextPage):
 	global pageCounter
@@ -39,6 +38,16 @@ def urlRequest(url): #connecting to the URL and parsing HTML with saving to Beau
 	global soup
 	response = requests.get(url)
 	soup = BeautifulSoup(response.text, "html.parser")
+	validBrand()
+
+def validBrand(): # Checking if typed brand and model are correct	
+	valid = soup.find('a', attrs={'itemprop':'item', 'href':url})
+	if valid:
+		pass
+	else:
+		print('Błędna nazwa marki lub modelu. Spróbuj ponownie.')
+		urlCreate()
+		urlRequest(url)
 
 def scrapData(soup): # Extracting data from the website
 	for i in soup.findAll('div', attrs={'class':'offer-item__content ds-details-container'}):
@@ -105,6 +114,8 @@ def newDir(fileNameTXT, fileNameCSV): # Moving created files to dedicated direct
 print('Aby pobrać dane z serwisu otomoto wpisz żądaną markę i model samochodu.')
 urlCreate()
 urlRequest(url)
+print('Zbieranie danych: strona numer {}...'.format(str(pageCounter))) # An info about data collection from the first page
+time.sleep(3)
 scrapData(soup) # Data scrap for the first site
 nextPage = soup.findAll('li', attrs={'class':'next abs'}) # Return the tag with href to the next page
 loop(nextPage) # Loop initialisation
